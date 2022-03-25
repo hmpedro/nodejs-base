@@ -13,6 +13,12 @@ class DogController {
   constructor(dogService, dogInputValidators) {
     this.dogService = dogService;
     this.dogInputValidators = dogInputValidators;
+
+    this.retrieve = this.retrieve.bind(this);
+    this.retrieveById = this.retrieveById.bind(this);
+    this.create = this.create.bind(this);
+    this.update = this.update.bind(this);
+    this.delete = this.delete.bind(this);
   }
 
   /**

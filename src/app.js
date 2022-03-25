@@ -4,12 +4,13 @@ const helmet = require('helmet');
 const compression = require('compression');
 const routes = require('./routes');
 const errorHandler = require('./middlewares/error-handler.middleware');
+const db = require('./infra/database');
 
 class AppController {
   constructor() {
     this.express = express();
-    this.initDbConnection();
-    this.initCacheConnection();
+    AppController.testDbConnection();
+    AppController.initCacheConnection();
     this.middlewares();
     this.routes();
 
@@ -30,9 +31,15 @@ class AppController {
     this.express.use(errorHandler);
   }
 
-  static async initDbConnection() {
+  static async testDbConnection() {
     console.log('Initiate the connection with your database, like Postgres, MySQL, etc.');
-    return Promise.resolve();
+    try {
+      const dbConnection = db.connect();
+      await dbConnection.authenticate();
+      console.log('Connection has been established successfully.');
+    } catch (error) {
+      throw new Error(`Unable to connect to the database: ${error}`);
+    }
   }
 
   static async initCacheConnection() {

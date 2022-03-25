@@ -10,6 +10,12 @@ class DogService {
    */
   constructor(dogRepository) {
     this.dogRepository = dogRepository;
+
+    this.retrieve = this.retrieve.bind(this);
+    this.retrieveById = this.retrieveById.bind(this);
+    this.create = this.create.bind(this);
+    this.update = this.update.bind(this);
+    this.delete = this.delete.bind(this);
   }
 
   /**
@@ -18,8 +24,8 @@ class DogService {
    * @param { {} } pagination
    * @return { Promise<*> }
    */
-  async retrieve({ filterValues, pagination }) {
-    return this.dogRepository.retrieve({ filterValues, pagination });
+  async retrieve(filterValues, pagination) {
+    return this.dogRepository.retrieve(filterValues, pagination);
   }
 
   /**

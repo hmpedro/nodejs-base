@@ -6,28 +6,34 @@ const { DatabaseError } = require('../../utils/errors');
 class DogRepository {
   /**
    * @constructor
-   * @param dbInstance
+   * @param { Sequelize } orm
    */
-  constructor(dbInstance) {
-    this.db = dbInstance;
+  constructor(orm) {
+    this.orm = orm;
+
+    this.retrieve = this.retrieve.bind(this);
+    this.retrieveById = this.retrieveById.bind(this);
+    this.insert = this.insert.bind(this);
+    this.update = this.update.bind(this);
+    this.delete = this.delete.bind(this);
   }
 
   /**
    * @name retrieve
    * @param { {} } filterValues
-   * @param { {} } pagination
+   * @param { { limit: number, offset: number } } pagination
    * @return { Promise<*> }
    */
-  async retrieve(filterValues = {}, pagination = {}) {
-    const dbConnection = this.db.getDbConnection();
-
-    const queryPagination = {
-      ...{ limit: 10, offset: 0 },
-      ...pagination,
-    };
+  async retrieve(filterValues = {}, pagination = { limit: 10, offset: 0 }) {
+    const { limit, offset } = pagination;
+    const { Dog } = this.orm.models;
 
     try {
-      return dbConnection.find({ filters: filterValues, pagination: queryPagination });
+      return Dog.findAll({
+        where: filterValues,
+        limit,
+        offset,
+      });
     } catch (e) {
       throw new DatabaseError({ message: e.message });
     }
@@ -39,10 +45,10 @@ class DogRepository {
    * @return { Promise<*> }
    */
   async retrieveById(dogId) {
-    const dbConnection = this.db.getDbConnection();
+    const { Dog } = this.orm.models;
 
     try {
-      return dbConnection.find({ id: dogId });
+      return Dog.findByPk(dogId);
     } catch (e) {
       throw new DatabaseError({ message: e.message });
     }
@@ -54,10 +60,10 @@ class DogRepository {
    * @return {Promise<*|undefined|(*&{createdAt: number, id: number, updatedAt: number})>}
    */
   async insert(dog) {
-    const dbConnection = this.db.getDbConnection();
+    const { Dog } = this.orm.models;
 
     try {
-      return dbConnection.insert(dog);
+      return Dog.create(dog);
     } catch (e) {
       throw new DatabaseError({ message: e.message });
     }
@@ -70,10 +76,14 @@ class DogRepository {
    * @return { Promise<*|undefined|(*&{createdAt: number, id: number, updatedAt: number})> }
    */
   async update(dogId, dog) {
-    const dbConnection = this.db.getDbConnection();
+    const { Dog } = this.orm.models;
 
     try {
-      return dbConnection.update(dogId, dog);
+      return Dog.update(dog, {
+        where: {
+          id: dogId,
+        },
+      });
     } catch (e) {
       throw new DatabaseError({ message: e.message });
     }
@@ -81,14 +91,18 @@ class DogRepository {
 
   /**
    * @name delete
-   * @param dogId
-   * @return {Promise<boolean>}
+   * @param { number } dogId
+   * @return {Promise<number>}
    */
   async delete(dogId) {
-    const dbConnection = this.db.getDbConnection();
+    const { Dog } = this.orm.models;
 
     try {
-      return dbConnection.delete(dogId);
+      return Dog.destroy({
+        where: {
+          id: dogId,
+        },
+      });
     } catch (e) {
       throw new DatabaseError({ message: e.message });
     }
